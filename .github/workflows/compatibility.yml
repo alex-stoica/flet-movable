@@ -1,0 +1,86 @@
+name: Compatibility
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: python tools/check_style.py
+      - run: python -m unittest discover -s tests -p test_release_policy.py -v
+      - name: Check release notes
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python tools/check_release.py --base "$BASE_REF"
+
+  python:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.14"]
+        flet-version: ["1.1.0", "1.1.2"]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build and install wheel
+        run: |
+          python -m pip install build twine
+          python -m build flet_movable --outdir dist
+          python -m twine check dist/*
+          python tools/check_wheel.py
+          python -m pip install "flet==${{ matrix.flet-version }}" dist/*.whl
+      - run: python -m unittest discover -s tests -v
+
+  flutter:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flet-version: ["1.1.0", "1.1.2"]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: "3.47.9"
+          cache: true
+      - name: Select Flet
+        working-directory: flet_movable/src/flutter/flet_movable
+        run: |
+          printf 'dependency_overrides:\n  flet: %s\n' '${{ matrix.flet-version }}' > pubspec_overrides.yaml
+      - name: Check extension
+        working-directory: flet_movable/src/flutter/flet_movable
+        run: |
+          flutter pub get
+          dart format --output=none --set-exit-if-changed lib test
+          flutter analyze
+          flutter test
+
+  ready:
+    name: Ready
+    if: always()
+    needs: [policy, python, flutter]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all checks
+        env:
+          POLICY: ${{ needs.policy.result }}
+          PYTHON: ${{ needs.python.result }}
+          FLUTTER: ${{ needs.flutter.result }}
+        run: test "$POLICY" = success && test "$PYTHON" = success && test "$FLUTTER" = success

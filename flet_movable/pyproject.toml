@@ -1,0 +1,29 @@
+[project]
+name = "flet-movable"
+version = "0.1.0"
+description = "Native bounded dragging for Flet controls"
+readme = {text = "Native bounded dragging for Flet. See the repository for usage and compatibility.", content-type = "text/plain"}
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Alex Stoica", email = "alexstoica@protonmail.com"}]
+requires-python = ">=3.11"
+dependencies = ["flet>=1.1.0,<1.2"]
+classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3"]
+
+[project.urls]
+Homepage = "https://github.com/alex-stoica/flet-movable"
+Repository = "https://github.com/alex-stoica/flet-movable"
+Issues = "https://github.com/alex-stoica/flet-movable/issues"
+
+[tool.hatch.build]
+exclude = ["**/build/**", "**/.dart_tool/**", "**/__pycache__/**", "**/test/**", "**/pubspec.lock", "**/pubspec_overrides.yaml", "**/.flutter-plugins-dependencies"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/flet_movable", "src/flutter"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "pyproject.toml", "LICENSE"]
+
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"

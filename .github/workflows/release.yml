@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    uses: ./.github/workflows/compatibility.yml
+
+  release:
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Validate tag and prepare notes
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python tools/check_release.py --tag "$RELEASE_TAG" --notes-output release-notes.txt
+      - name: Build artifacts
+        run: |
+          python -m pip install build twine
+          python -m build flet_movable --outdir dist
+          python -m twine check dist/*
+          python tools/check_wheel.py
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release create "$RELEASE_TAG" dist/* --verify-tag --title "$RELEASE_TAG" --notes-file release-notes.txt

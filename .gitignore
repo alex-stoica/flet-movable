@@ -1,0 +1,12 @@
+build/
+.venv/
+__pycache__/
+.dart_tool/
+.flutter-plugins-dependencies
+pubspec.lock
+dist/
+pubspec_overrides.yaml
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+release-notes.txt
