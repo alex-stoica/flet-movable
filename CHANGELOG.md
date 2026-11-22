@@ -1,9 +1,13 @@
 # Changelog
 
+## 0.2.0
+
+- Require Python 3.13 or newer.
+
 ## 0.1.0
 
-- Native bounded dragging with configurable hold duration, outline and haptics.
-- Start, end and cancellation events; restore position on cancellation.
-- Cancel active gestures when viewport or container dimensions change.
+- Native bounded dragging; configurable hold, outline and haptics.
+- Start/end/cancel events; cancellation restores position.
+- Cancel gestures on viewport/container resizing.
 
-Experimental. Tested on Android and Flet 1.1.0/1.1.2. Rotation has automated coverage; the latest rotation fix still needs physical-device verification.
+Experimental; Android, Flet 1.1.0/1.1.2 tested. Rotation covered automatically; device verification pending.
