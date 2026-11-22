@@ -1,6 +1,6 @@
 [project]
 name = "flet-movable"
-version = "0.1.0"
+version = "0.2.0"
 description = "Native bounded dragging for Flet controls"
 readme = {text = "Native bounded dragging for Flet. See the repository for usage and compatibility.", content-type = "text/plain"}
 license = "MIT"
